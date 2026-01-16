@@ -1,6 +1,7 @@
+import { Request, Response } from "express";
 import { Conversation } from "../models/conversation.model.js";
 
-export const startConversation = async (req, res) => {
+export const startConversation = async (req: Request, res: Response) => {
   const { visitorName } = req.body;
 
   if (!visitorName) {
