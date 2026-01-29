@@ -3,6 +3,8 @@ import { Admin } from "../models/admin.model.js";
 import { Request, Response } from "express";
 import { ApiError, ApiResponse, asyncHandler } from "../utils/index.js";
 
+console.log(process.env.NODE_ENV);
+// console.log("isProd:", isProd);
 
 export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
@@ -20,11 +22,14 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
     );
 
     const isProd = process.env.NODE_ENV === "production";
+    console.log("ENV:",process.env.NODE_ENV);
+    console.log("isProd:", isProd);
 
     res.cookie("admin_token", token, {
         httpOnly: true,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd,
+        // sameSite: isProd ? "none" : "lax",
+        sameSite: "none",
+        secure: true
     });
 
     res.json(new ApiResponse({ admin: admin._id }, "Admin logged in"));
