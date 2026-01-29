@@ -4,14 +4,40 @@ import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
 
 export function registerVisitorSocket(socket: Socket, io: Server) {
+    // Start conversation
+    socket.on("conversation:start", async ({ visitorName }) => {
+        if (!visitorName?.trim()) return;
+
+        const conversation = await Conversation.create({
+            visitorName,
+            status: "active",
+            socketId: socket.id,
+        });
+
+        socket.join(conversation._id.toString());
+
+        // 🔥 NEW: notify ALL admins
+        io.emit("conversation:new", {
+            _id: conversation._id,
+            // conversationId: conversation._id,
+            visitorName: conversation.visitorName,
+            status: conversation.status,
+            createdAt: conversation.createdAt,
+        });
+
+        socket.emit("conversation:ready", {
+            conversationId: conversation._id,
+        });
+    });
+
     // Join conversation
     socket.on("conversation:join", async ({ conversationId }) => {
         if (!conversationId) {
-        socket.emit("conversation:error", {
-            message: "conversationId missing",
-        });
-        return;
-    }
+            socket.emit("conversation:error", {
+                message: "conversationId missing",
+            });
+            return;
+        }
         const conversation = await Conversation.findById(conversationId);
 
         if (!conversation || conversation.status === "closed") {
@@ -35,6 +61,13 @@ export function registerVisitorSocket(socket: Socket, io: Server) {
         const conversation = await Conversation.findById(conversationId);
         if (!conversation || conversation.status === "closed") return;
 
+        // if (conversation.status === "closed") {
+        // socket.emit("conversation:error", {
+        //     message: "Conversation is closed",
+        // });
+        // return;
+        // }
+
         const message = await Message.create({
             conversationId,
             sender: "visitor",
@@ -42,12 +75,12 @@ export function registerVisitorSocket(socket: Socket, io: Server) {
         });
 
         // 🔴 ADMIN VISIBILITY (terminal)
-    console.log(
-        `[CHAT] ${conversation.visitorName}: ${content}`
-    );
+        console.log(
+            `[CHAT] ${conversation.visitorName}: ${content}`
+        );
 
         io.to(conversationId).emit("message:new", {
-            sender: message.sender,
+            sender: conversation.visitorName, // message.sender
             content: message.content,
             createdAt: message.createdAt,
         });
