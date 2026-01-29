@@ -19,9 +19,12 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
         { expiresIn: "7d" }
     );
 
+    const isProd = process.env.NODE_ENV === "production";
+
     res.cookie("admin_token", token, {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
     });
 
     res.json(new ApiResponse({ admin: admin._id }, "Admin logged in"));
