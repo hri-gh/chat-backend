@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireAdmin } from "../middleware/adminAuth.middleware.js";
 import {
     getConversations,
     getMessages,
@@ -7,8 +8,9 @@ import {
 
 const router = Router();
 
-router.get("/conversations", getConversations);
-router.get("/conversations/:id/messages", getMessages);
-router.delete("/conversations/:id", deleteConversation);
+
+router.get("/conversations", requireAdmin, getConversations);
+router.get("/conversations/:id/messages", requireAdmin, getMessages);
+router.delete("/conversations/:id", requireAdmin, deleteConversation);
 
 export default router;

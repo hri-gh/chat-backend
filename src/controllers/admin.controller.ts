@@ -6,6 +6,7 @@ import { Message } from "../models/message.model.js";
  * GET /api/admin/conversations
  */
 export const getConversations = async (req: Request, res: Response) => {
+
     const conversations = await Conversation.find()
         .sort({ updatedAt: -1 })
         .lean();
