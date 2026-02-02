@@ -40,6 +40,9 @@ export function registerVisitorSocket(socket: Socket, io: Server) {
         }
         const conversation = await Conversation.findById(conversationId);
 
+        console.log(
+            `[JOIN] ${conversation!.visitorName}`
+        );
         if (!conversation || conversation.status === "closed") {
             socket.emit("conversation:error", {
                 message: "Conversation not found or closed",

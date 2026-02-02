@@ -37,10 +37,10 @@ export function registerAdminSocket(socket: Socket, io: Server) {
         if (!conversation || conversation.status === "closed") return;
 
         // if (conversation.status === "closed") {
-        // socket.emit("conversation:error", {
-        //     message: "Conversation is closed",
-        // });
-        // return;
+        //     socket.emit("conversation:error", {
+        //         message: "Conversation is closed",
+        //     });
+        //     return;
         // }
 
         const message = await Message.create({
@@ -62,8 +62,27 @@ export function registerAdminSocket(socket: Socket, io: Server) {
             status: "closed",
         });
 
+        //     const conversation = await Conversation.findByIdAndUpdate(
+        //     conversationId,
+        //     { status: "closed" },
+        //     { new: true }
+        // );
+
+
+        // console.log(conversation)
+        // if (!conversation) return;
+
+        // 🔹 Notify chat participants
         io.to(conversationId).emit("conversation:closed", {
+            conversationId,
             reason: "ended_by_admin",
         });
+
+        // 🔥 NEW: Notify ALL admins (like conversation:new)
+        // io.emit("conversation:updated", {
+        //     _id: conversation._id,
+        //     status: conversation.status, // "closed"
+        //     updatedAt: conversation.updatedAt,
+        // });
     });
 }
