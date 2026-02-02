@@ -9,8 +9,8 @@ import {
 const router = Router();
 
 
-router.get("/conversations", getConversations);
-router.get("/conversations/:id/messages",  getMessages);
-router.delete("/conversations/:id", deleteConversation);
+router.get("/conversations", requireAdmin, getConversations);
+router.get("/conversations/:id/messages", requireAdmin, getMessages);
+router.delete("/conversations/:id", requireAdmin, deleteConversation);
 
 export default router;

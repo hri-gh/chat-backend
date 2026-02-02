@@ -44,9 +44,9 @@ app.use(cookieParser())
 import testRouter from './routes/test.route.js'
 import adminRouter from "./routes/admin.routes.js";
 import conversationRouter from "./routes/conversation.routes.js";
-import adminAuthRouter from "./routes/adminAuth.routes.js";
+// import adminAuthRouter from "./routes/adminAuth.routes.js";
 
-// app.use('/api/test', testRouter)
+app.use('/api/test', testRouter)
 app.use("/api/admin", adminRouter);
 app.use("/api/conversations", conversationRouter);
 // app.use("/api/admin/auth", adminAuthRouter);
