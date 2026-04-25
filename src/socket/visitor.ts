@@ -2,32 +2,47 @@
 import { Server, Socket } from "socket.io";
 import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
+import { sendNewConversationEmail } from "../services/email.service.js";
 
 export function registerVisitorSocket(socket: Socket, io: Server) {
     // Start conversation
     socket.on("conversation:start", async ({ visitorName }) => {
         if (!visitorName?.trim()) return;
 
-        const conversation = await Conversation.create({
-            visitorName,
-            status: "active",
-            socketId: socket.id,
-        });
+        try {
+            // Create conversation
+            const conversation = await Conversation.create({
+                visitorName,
+                status: "active",
+                socketId: socket.id,
+            });
 
-        socket.join(conversation._id.toString());
+            socket.join(conversation._id.toString());
 
-        // 🔥 NEW: notify ALL admins
-        io.emit("conversation:new", {
-            _id: conversation._id,
-            // conversationId: conversation._id,
-            visitorName: conversation.visitorName,
-            status: conversation.status,
-            createdAt: conversation.createdAt,
-        });
+            // SEND EMAIL NOTIFICATION
+            await sendNewConversationEmail({
+                visitorName: conversation.visitorName,
+                conversationId: conversation._id.toString(),
+            });
 
-        socket.emit("conversation:ready", {
-            conversationId: conversation._id,
-        });
+            // Notify admin
+            io.emit("conversation:new", {
+                _id: conversation._id,
+                visitorName: conversation.visitorName,
+                status: conversation.status,
+                createdAt: conversation.createdAt,
+            });
+
+            // Notify visitor
+            socket.emit("conversation:ready", {
+                conversationId: conversation._id,
+            });
+
+            console.log(`✅ New conversation created and email sent: ${conversation._id}`);
+        } catch (error) {
+            console.error("❌ Error creating conversation:", error);
+            socket.emit("error", { message: "Failed to start conversation" });
+        }
     });
 
     // Join conversation
